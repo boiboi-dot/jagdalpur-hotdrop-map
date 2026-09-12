@@ -6,7 +6,7 @@ import {
   Sparkles, 
   Flame, 
   X, 
-  Instagram, 
+  camera, 
   Compass, 
   TreePine, 
   Coffee, 
@@ -202,7 +202,7 @@ export default function App() {
                 rel="noreferrer"
                 className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md border border-white/15 px-2.5 py-1 rounded-full flex items-center gap-1.5 text-[11px] text-slate-200 hover:text-amber-400 transition"
               >
-                <Instagram className="w-3 h-3 text-pink-400" />
+                <camera className="w-3 h-3 text-pink-400" />
                 <span>By @{selectedPlace.photographer.instagramHandle}</span>
               </a>
             </div>
