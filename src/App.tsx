@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import confetti from 'canvas-confetti';
 import { 
   Sparkles, 
@@ -16,11 +16,9 @@ import {
 } from 'lucide-react';
 import { SEED_PLACES, Place } from './data/places';
 
-mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA';
-
 export default function App() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const map = useRef<maplibregl.Map | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isSpinning, setIsSpinning] = useState(false);
@@ -28,9 +26,10 @@ export default function App() {
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
 
-    map.current = new mapboxgl.Map({
+    // Free Open-Source Map Engine (No credit card or tokens needed)
+    map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
+      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
       center: [82.0000, 19.1000],
       zoom: 11,
       pitch: 58,
@@ -39,20 +38,9 @@ export default function App() {
     });
 
     map.current.on('load', () => {
-      map.current?.addSource('mapbox-dem', {
-        type: 'raster-dem',
-        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-        tileSize: 512,
-        maxzoom: 14
-      });
-      map.current?.setTerrain({ source: 'mapbox-dem', exaggeration: 1.35 });
+      map.current?.resize();
 
-      map.current?.setFog({
-        color: 'rgb(7, 10, 18)',
-        'high-color': 'rgb(20, 30, 50)',
-        'horizon-blend': 0.12,
-      });
-
+      // Render custom pins for Jagdalpur spots
       SEED_PLACES.forEach((place) => {
         const markerEl = document.createElement('div');
         markerEl.className = `marker-wrapper ${place.isHotdrop ? 'hotdrop-radar' : ''}`;
@@ -75,7 +63,7 @@ export default function App() {
           navigateToSpot(place);
         });
 
-        new mapboxgl.Marker(markerEl)
+        new maplibregl.Marker({ element: markerEl })
           .setLngLat(place.coordinates)
           .addTo(map.current!);
       });
@@ -117,8 +105,10 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-bastar-950 font-sans text-white">
-      <div ref={mapContainer} className="w-full h-full" />
+      {/* 3D Map Canvas pinned to edges */}
+      <div ref={mapContainer} className="absolute inset-0 w-full h-full z-0" />
 
+      {/* Floating Top Header */}
       <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
         <div className="pointer-events-auto bg-bastar-900/85 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-2xl shadow-xl flex items-center gap-3">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -127,6 +117,7 @@ export default function App() {
           </span>
         </div>
 
+        {/* Mood Roulette / Random Pick Trigger */}
         <button
           onClick={handleRoulette}
           disabled={isSpinning}
@@ -137,6 +128,7 @@ export default function App() {
         </button>
       </div>
 
+      {/* Category Filter Pills */}
       <div className="absolute top-16 left-4 right-4 z-20 flex gap-2 overflow-x-auto no-scrollbar py-1 pointer-events-auto">
         {[
           { id: 'all', label: 'All Radar', icon: Compass },
@@ -164,8 +156,9 @@ export default function App() {
         })}
       </div>
 
+      {/* Detail Bottom Drawer */}
       {selectedPlace && (
-        <div className="absolute bottom-0 left-0 right-0 z-30 max-h-[80vh] overflow-y-auto bg-bastar-950/95 backdrop-blur-2xl border-t border-slate-700/60 p-5 md:p-7 rounded-t-3xl shadow-2xl transition-transform">
+        <div className="absolute bottom-0 left-0 right-0 z-30 max-h-[80vh] overflow-y-auto bg-bastar-950/95 backdrop-blur-2xl border-t border-slate-700/60 p-5 md:p-7 rounded-t-3xl shadow-2xl transition-transform animate-in fade-in slide-in-from-bottom duration-300">
           <div className="flex items-start justify-between mb-3">
             <div>
               <div className="flex items-center gap-2 mb-1.5">
